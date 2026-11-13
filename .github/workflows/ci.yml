@@ -22,10 +22,11 @@ jobs:
         run: |
           if [ -z "$BASE" ] || ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then
             echo 'code=true' >> "$GITHUB_OUTPUT"
-          elif git diff --name-only "$BASE" "$GITHUB_SHA" | rg -qv '^(docs/.*\.md|README\.md|AGENTS\.md)$'; then
-            echo 'code=true' >> "$GITHUB_OUTPUT"
-          else
+          elif git diff --quiet "$BASE" "$GITHUB_SHA" -- . \
+            ':(glob,exclude)docs/**/*.md' ':(exclude)README.md' ':(exclude)AGENTS.md'; then
             echo 'code=false' >> "$GITHUB_OUTPUT"
+          else
+            echo 'code=true' >> "$GITHUB_OUTPUT"
           fi
 
   documentation:
@@ -37,6 +38,7 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version-file: .nvmrc
+          package-manager-cache: false
       - run: npm exec --yes --package=prettier@3.10.1 -- prettier --check README.md AGENTS.md docs
       - run: node tools/check-doc-links.ts
 
