@@ -9,11 +9,13 @@ functions, and explicit effect boundaries. The current milestone is a local
 desktop/runtime foundation. Do not add GitHub, models, reviewer processes, remote
 services, or publication without a feature request.
 
-**Every test must earn its cost.** Add or update tests only for distinct behavior,
-contracts, security/data integrity or a material regression. Prefer relevant
-existing coverage; do not require a spec per file or blanket coverage quotas. A
-change may need no new tests. Preserve valuable coverage and mandatory checks;
-follow the [testing policy](docs/engineering/testing.md) for test selection.
+**Keep only useful, nonduplicated tests.** Each test must protect a distinct
+behavior, contract, security/data integrity risk, or material regression. Before
+adding a test, identify what existing coverage misses. Remove or consolidate
+redundant scenarios, assertions, and polling in the touched area; overlap between
+test layers must catch different failures. A change may need no new tests.
+Preserve valuable coverage and mandatory checks, without per-file specs or
+coverage quotas. Follow the [testing policy](docs/engineering/testing.md).
 
 Run `pnpm verify` before handoff for implementation changes. Documentation-only
 changes need formatting and link checks. Report checks that could not run.

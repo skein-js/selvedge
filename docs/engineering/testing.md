@@ -5,6 +5,12 @@ security/data integrity, or a material regression. Extend useful existing
 coverage first. No per-file spec requirement, construction tests, blanket
 coverage percentage, or incidental markup snapshots.
 
+Before adding or retaining a test, identify the distinct failure it can catch and
+check whether existing coverage already catches it. Remove or consolidate checks
+that add no protection. Overlap between test layers requires different failure
+modes; record that reason in the test inventory. Preserve unique security and
+data-integrity coverage when simplifying tests.
+
 Use Vitest for focused behavioral checks. Put tests, fixtures, and mocks in the
 nearest owning `tests/` directory. Ordinary tests are credential-free and need no
 native database, Docker, or paid provider. Native persistence tests are separate
@@ -17,12 +23,25 @@ Avoid duplicating those scenarios across unnecessary test tiers. Use compiler,
 lint, formatter, link, and rendered checks for generated wiring or visual-only
 changes. Never add permanent tests that merely search configuration text.
 
-Keep the ordinary suite to the two distinct IPC contracts (sender authorization
-and request authority). One native integration journey owns duplicate admission,
-exclusive database ownership, and retained receipts. One packaged smoke journey
-owns the user action, actual preload/main isolation, tray/window lifecycle,
-bounded shutdown, and utility-process recovery. Do not repeat receipt deduplication
-in the smoke journey or reassert a condition already established by its wait.
+## Foundation test inventory
+
+| Check                                                                                 | Distinct protection                                                                                                                                                                                  |
+| ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [IPC sender unit test](../../apps/desktop/src/tests/ipc-security.spec.ts)             | Trust only the expected window, top frame, and exact document, including URL suffixes.                                                                                                               |
+| [Backend request unit test](../../libs/contracts/src/tests/runtime-contracts.spec.ts) | Accept the fixed protocol and reject unknown operations, malformed identities, and injected command/path authority.                                                                                  |
+| [Native SQLite integration](../../apps/desktop/src/tests/runtime.integration.spec.ts) | Concurrent duplicate admission, exclusive database ownership, and retained state/receipts after close and reopen, using Electron's native ABI.                                                       |
+| [Packaged desktop journey](../../tools/smoke.ts)                                      | Actual preload/main isolation, a visible saved result, tray/window lifecycle, one crash recovery followed by an error on repeated failure, persistence across process termination, and bounded Quit. |
+
+The sender unit test covers frame/document edge cases; the packaged foreign-window
+check verifies the running IPC handler actually enforces authorization. Backend
+schema checks protect the utility protocol; the packaged malformed-request check
+verifies the exposed preload rejects bad input. These protect separate boundaries.
+
+Keep receipt deduplication in native integration rather than repeating it through
+the UI. In the smoke journey, reuse the state returned by readiness waits and use
+the rendered result to establish successful window reopening. Do not reassert a
+condition already established by its wait. Add coverage only for a distinct risk,
+not to meet a test-count or coverage target.
 
 Keep test sources outside production inputs and artifacts. Test target inputs
 must include the actual suites so edits invalidate cached results. Missing suite

@@ -22,8 +22,8 @@ async function launch() {
   application = app;
   const page = await app.firstWindow();
   page.on('pageerror', (error) => console.error(error));
-  await waitForRuntime(page, (state) => state.status === 'ready');
-  return { app, page, startupMs: Math.round(performance.now() - startedAt) };
+  const runtime = await waitForRuntime(page, (state) => state.status === 'ready');
+  return { app, page, runtime, startupMs: Math.round(performance.now() - startedAt) };
 }
 
 async function memory(app: ElectronApplication) {
@@ -68,11 +68,12 @@ async function killBackend(app: ElectronApplication) {
 
 try {
   const first = await launch();
-  assert.equal((await status(first.page)).lastCheckAt, null);
+  assert.equal(first.runtime.lastCheckAt, null);
   await first.page.getByRole('button', { name: 'Run local check' }).click();
-  await waitForRuntime(first.page, (state) => state.lastCheckAt !== null);
-  const retained = (await status(first.page)).lastCheckAt;
-  assert.ok(retained);
+  const { lastCheckAt: retained } = await waitForRuntime(
+    first.page,
+    (state) => state.lastCheckAt !== null,
+  );
   await first.page.waitForFunction(() => {
     const value = document.querySelector('[data-testid="last-check"]')?.textContent?.trim();
     return value && value !== 'No checks yet';
@@ -119,7 +120,6 @@ try {
   const tray = await memory(first.app);
   await first.app.evaluate(({ app }) => app.emit('activate'));
   const reopened = await first.app.firstWindow();
-  await waitForRuntime(reopened, (state) => state.lastCheckAt === retained);
   await reopened.waitForFunction(
     (expected) => document.querySelector('[data-testid="last-check"]')?.textContent === expected,
     displayedCheck,
@@ -141,15 +141,14 @@ try {
     reopened,
     (state) => state.status === 'ready' && state.lastCheckAt === retained,
   );
-  const nextPid = await killBackend(first.app);
-  assert.notEqual(firstPid, nextPid);
+  await killBackend(first.app);
   await waitForRuntime(reopened, (state) => state.status === 'error');
   await reopened.getByRole('alert').waitFor();
   assert.equal(await reopened.getByTestId('last-check').textContent(), displayedCheck);
   await first.app.close();
   application = undefined;
   const second = await launch();
-  assert.equal((await status(second.page)).lastCheckAt, retained);
+  assert.equal(second.runtime.lastCheckAt, retained);
   const liveShutdownStarted = performance.now();
   await second.app.close();
   assert.ok(
