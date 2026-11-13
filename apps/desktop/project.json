@@ -1,0 +1,124 @@
+{
+  "name": "desktop",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/desktop/src",
+  "projectType": "application",
+  "tags": ["platform:node"],
+  "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "options": {
+        "commands": [
+          "tsc --noEmit -p apps/desktop/tsconfig.app.json",
+          "tsc --noEmit -p tsconfig.tools.json",
+          "tsc --noEmit -p tsconfig.spec.json"
+        ],
+        "parallel": false
+      },
+      "inputs": [
+        "default",
+        "^default",
+        "{workspaceRoot}/tools/**/*",
+        "{workspaceRoot}/forge.config.ts",
+        "{workspaceRoot}/vitest*.ts",
+        "{workspaceRoot}/tsconfig*.json",
+        "{workspaceRoot}/apps/**/tests/**/*",
+        "{workspaceRoot}/libs/**/tests/**/*",
+        "{workspaceRoot}/apps/renderer/src/desktop.d.ts"
+      ]
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "dependsOn": [
+        {
+          "target": "build",
+          "projects": ["core", "renderer"]
+        }
+      ],
+      "inputs": ["production", "^production", "{workspaceRoot}/tools/build-desktop.ts"],
+      "outputs": ["{workspaceRoot}/dist/desktop"],
+      "options": {
+        "command": "node --import tsx tools/build-desktop.ts"
+      }
+    },
+    "native-rebuild": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "electron-rebuild -f -w better-sqlite3"
+      }
+    },
+    "dev": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "dependsOn": [],
+      "options": {
+        "command": "node --import tsx tools/dev.ts"
+      }
+    },
+    "package": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "dependsOn": ["build", "native-rebuild"],
+      "options": {
+        "command": "electron-forge package"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "dependsOn": [],
+      "options": {
+        "command": "vitest run --config vitest.config.ts"
+      },
+      "inputs": [
+        "default",
+        "^default",
+        "{workspaceRoot}/apps/**/tests/**/*",
+        "{workspaceRoot}/libs/**/tests/**/*",
+        "{workspaceRoot}/vitest.config.ts"
+      ]
+    },
+    "test-integration": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "dependsOn": ["build", "native-rebuild"],
+      "options": {
+        "command": "node --import tsx tools/integration.ts"
+      }
+    },
+    "smoke": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "dependsOn": ["package"],
+      "options": {
+        "command": "node --import tsx tools/smoke.ts"
+      }
+    },
+    "format-check": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "dependsOn": [],
+      "options": {
+        "command": "prettier --check ."
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "default",
+        "^default",
+        "{workspaceRoot}/tools/**/*",
+        "{workspaceRoot}/forge.config.ts",
+        "{workspaceRoot}/vitest*.ts",
+        "{workspaceRoot}/tsconfig*.json"
+      ],
+      "options": {
+        "command": "eslint apps/desktop tools forge.config.ts vitest*.ts --max-warnings=0"
+      }
+    }
+  }
+}

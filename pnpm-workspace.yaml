@@ -1,0 +1,31 @@
+packages:
+  - apps/*
+  - libs/*
+nodeLinker: hoisted
+saveExact: true
+allowBuilds:
+  '@nx/angular-rspack-compiler': true
+  '@parcel/watcher': true
+  better-sqlite3: true
+  electron: true
+  esbuild: true
+  lmdb: true
+  msgpackr-extract: true
+  nx: true
+minimumReleaseAgeExclude:
+  - '@angular-devkit/architect@0.2202.7'
+  - '@angular-devkit/build-angular@22.2.7'
+  - '@angular-devkit/build-webpack@0.2202.7'
+  - '@angular-devkit/core@22.2.7'
+  - '@angular-devkit/schematics@22.2.7'
+  - '@angular/build@22.2.7'
+  - '@angular/cli@22.2.7'
+  - '@langchain/langgraph-sdk@1.16.0'
+  - '@langchain/langgraph@1.7.4'
+  - '@ngtools/webpack@22.2.7'
+  - '@schematics/angular@22.2.7'
+
+# Approved compatibility override: Electron 45 requires the N-API addon.
+overrides:
+  '@skein-js/storage-sqlite>better-sqlite3': 13.1.1
+  '@langchain/langgraph-checkpoint-sqlite>better-sqlite3': 13.1.1

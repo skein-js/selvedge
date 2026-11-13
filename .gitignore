@@ -1,0 +1,15 @@
+node_modules/
+dist/
+out/
+tmp/
+.nx/
+.skein/
+.artifacts/
+.env
+.env.*
+!.env.example
+*.sqlite*
+*.log
+.DS_Store
+
+.angular

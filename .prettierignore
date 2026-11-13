@@ -1,0 +1,9 @@
+node_modules
+.nx
+.skein
+**/.skein
+.artifacts
+dist
+out
+pnpm-lock.yaml
+.husky/_

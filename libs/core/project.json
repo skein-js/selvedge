@@ -1,0 +1,26 @@
+{
+  "name": "core",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/core/src",
+  "projectType": "library",
+  "tags": ["platform:node"],
+  "// targets": "to see all targets run: nx show project core --web",
+  "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "options": {
+        "command": "tsc --noEmit -p libs/core/tsconfig.lib.json"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["production", "^production"],
+      "outputs": ["{projectRoot}/.skein/build"],
+      "options": {
+        "command": "skein build --artifact-only -c libs/core/langgraph.json"
+      }
+    }
+  }
+}
