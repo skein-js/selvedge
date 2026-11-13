@@ -16,6 +16,25 @@ noise. It is advisory; a clean review is not proof of correctness or security.
 
 ## Primary journey
 
+The current [manual local-review preview](manual-local-review.md) precedes this
+GitHub journey: Codex only, local committed ranges, private saved attempts, and no
+cross-commit finding reconciliation. The table below remains the proposed public
+MVP rather than a list of already shipped capabilities.
+
+The next [manual thread workflow](review-threads.md) makes each review task a
+persistent thread. Users select a repository and branch comparison or PR, run a
+private analysis, inspect an issue summary, and approve specific content before
+posting to GitHub. Each rerun/new commit adds an immutable attempt to the thread.
+Account authorization never replaces per-publication approval. Local branch
+reviews work without a GitHub connection; publication requires an explicitly
+linked matching PR.
+
+Repository options store a default skill/base branch and project instructions:
+stack label (Angular, Next.js, Django, or Other), subdirectory, tool versions,
+setup/run/test command text, and environment setup notes without secrets. These
+are reference instructions, not permission to execute commands. This manual-first
+slice precedes automatic monitoring in the implementation plan.
+
 1. Install Selvedge, provide Git, and choose a supported installed reviewer CLI.
 2. Connect one GitHub.com account and select accessible repositories.
 3. Confirm the review policy and the provider to which source context is sent.

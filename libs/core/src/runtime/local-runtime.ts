@@ -1,10 +1,11 @@
-import { pathToFileURL } from 'node:url';
 import { setTimeout } from 'node:timers/promises';
-import { z } from 'zod';
-import { embedSqliteGraphs } from '@skein-js/local';
+import { pathToFileURL } from 'node:url';
+
+import { checkResultSchema, requestIdSchema, runtimeStatusSchema } from '@selvedge/contracts';
 import { createProtocolRuntime } from '@skein-js/agent-protocol';
 import type { EmbeddableGraph } from '@skein-js/langgraph';
-import { checkResultSchema, requestIdSchema, runtimeStatusSchema } from '@selvedge/contracts';
+import { embedSqliteGraphs } from '@skein-js/local';
+import { z } from 'zod';
 
 const threadId = 'e0cf52f9-d820-4d6d-af70-729d07b6f7d5';
 const savedStateSchema = z.object({ lastCheckAt: z.iso.datetime().optional() });
@@ -23,10 +24,19 @@ const artifactSchema = z.object({
   ),
 });
 
-export async function openLocalRuntime(sqlitePath: string, graphPath: string) {
+export async function openLocalRuntime(
+  sqlitePath: string,
+  graphPath: string,
+  reviewGraphPath?: string,
+) {
   const module: unknown = await import(pathToFileURL(graphPath).href);
   const { graph } = artifactSchema.parse(module);
-  const local = await embedSqliteGraphs({ 'runtime-check': graph }, { sqlitePath });
+  const graphs: Record<string, EmbeddableGraph> = { 'runtime-check': graph };
+  if (reviewGraphPath) {
+    const reviewModule: unknown = await import(pathToFileURL(reviewGraphPath).href);
+    graphs['local-review'] = artifactSchema.parse(reviewModule).graph;
+  }
+  const local = await embedSqliteGraphs(graphs, { sqlitePath });
   const runtime = createProtocolRuntime(local.deps, {
     scheduler: { enabled: false },
     worker: { maxConcurrency: 1, shutdownGraceMs: 3000 },
@@ -40,11 +50,12 @@ export async function openLocalRuntime(sqlitePath: string, graphPath: string) {
   }
   const client = runtime.createNativeClient({
     sourceId: 'selvedge-local-runtime',
-    allowedAssistants: ['runtime-check'],
+    allowedAssistants: Object.keys(graphs),
   });
   let disposal: Promise<void> | undefined;
 
   return {
+    nativeClient: client,
     async getRuntimeStatus() {
       const thread = await local.deps.store.threads.get(threadId);
       const state = thread

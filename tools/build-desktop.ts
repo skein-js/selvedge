@@ -1,10 +1,15 @@
 import { cp, mkdir, rm } from 'node:fs/promises';
+
 import { build } from 'esbuild';
 
 await rm('dist/desktop', { recursive: true, force: true });
 await mkdir('dist/desktop/graphs', { recursive: true });
 await build({
-  entryPoints: ['apps/desktop/src/main.ts', 'apps/desktop/src/backend.ts'],
+  entryPoints: {
+    main: 'apps/desktop/src/main.ts',
+    backend: 'apps/desktop/src/backend.ts',
+    'codex-process': 'libs/core/src/reviewers/codex-process.ts',
+  },
   outdir: 'dist/desktop',
   platform: 'node',
   format: 'esm',
@@ -28,3 +33,9 @@ await cp(
   'dist/desktop/graphs/runtime-check.js.map',
 );
 await cp('apps/desktop/src/assets/tray.png', 'dist/desktop/tray.png');
+await cp('libs/core/.skein/build/chunks', 'dist/desktop/chunks', { recursive: true });
+await cp('libs/core/.skein/build/graphs/local-review.js', 'dist/desktop/graphs/local-review.js');
+await cp(
+  'libs/core/.skein/build/graphs/local-review.js.map',
+  'dist/desktop/graphs/local-review.js.map',
+);

@@ -5,9 +5,14 @@ The [architecture](docs/architecture.md), [MVP scope](docs/mvp-scope.md), and
 [Electron decision](docs/decisions/0001-electron.md) govern product boundaries.
 
 Keep the implementation small: four Nx projects, feature-owned code, pure domain
-functions, and explicit effect boundaries. The current milestone is a local
-desktop/runtime foundation. Do not add GitHub, models, reviewer processes, remote
-services, or publication without a feature request.
+functions, and explicit effect boundaries. The current milestone supports manual
+local reviews through the installed Codex CLI, with deterministic Skein orchestration.
+Do not add GitHub, other providers, automatic reviews, or publication without a
+feature request. The [manual-review contract](docs/manual-local-review.md) owns the
+current safety profile, bounds, and verification limits.
+The next [review-thread design](docs/review-threads.md) is planned work. Repository
+setup/run/test settings are instructions only; a stack label or skill cannot
+authorize execution. GitHub account access never implies approval to publish.
 
 **Keep only useful, nonduplicated tests.** Each test must protect a distinct
 behavior, contract, security/data integrity risk, or material regression. Before

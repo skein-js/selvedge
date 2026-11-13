@@ -1,6 +1,6 @@
 # Architecture
 
-**Status:** Proposed MVP architecture; [Electron is accepted](decisions/0001-electron.md).  
+**Status:** MVP architecture with implemented foundation and manual-review slice; [Electron is accepted](decisions/0001-electron.md).
 **Design baseline:** 2026-11-13
 
 ## Design principles
@@ -20,6 +20,12 @@ Local-first describes state ownership and execution location. Source context
 normally reaches the coding agent's configured model provider.
 
 ## Processes and boundaries
+
+The diagram describes the target MVP. The implemented slice contains the desktop,
+preload, utility, Skein, trusted Git extraction, Codex adapter, and SQLite files.
+GitHub, finding reconciliation, notifications, credential storage, and publication
+remain future work. See the [manual-review contract](manual-local-review.md) for
+actual supported operations, safety controls, and acceptance evidence.
 
 ```mermaid
 flowchart TB
@@ -123,7 +129,14 @@ receipt if the process dies before recording its run ID. It imports terminal
 results into the application database idempotently. These records are dispatch
 intent, not a second execution queue or workflow engine.
 
-The logical review identity includes GitHub host, immutable repository ID, PR
+The planned product model distinguishes a persistent review thread from immutable
+review requests and execution attempts. A PR thread is keyed by host, immutable
+repository ID, and PR number; a user-created branch thread has its own local UUID.
+The [thread design](review-threads.md) defines reruns, settings snapshots, migration,
+and the human approval boundary. This grouping is separate from Skein checkpoint
+threads and is not yet implemented in the manual preview.
+
+The logical review request identity includes GitHub host, immutable repository ID, PR
 number, head SHA, base SHA, merge-base SHA, reviewer configuration revision, and
 policy/prompt/schema versions. A uniqueness constraint suppresses repeated
 discovery of the same target and configuration. Explicit re-review creates a
@@ -277,6 +290,12 @@ guarantee that an AI assessment is correct; its UI must preserve that distinctio
 
 ## GitHub authentication and publication
 
+The next manual-first interaction is specified in the
+[review thread and approval design](review-threads.md#github-permission-and-approval).
+Connecting GitHub, granting posting capability, and approving a particular post
+are distinct decisions. Branch reviews require no GitHub connection and have no
+implicit publication destination.
+
 Use a GitHub App with device authorization and repository selection for product
 onboarding. Credentials stay in the OS credential store through a host-provided
 interface. Persist account identity, token expiry, and permission diagnostics
@@ -319,6 +338,11 @@ defines review grouping, permissions, and commit pinning; the
 define conditional polling and rate-limit handling.
 
 ## Security and resource controls
+
+Repository run/setup configuration initially supplies bounded instructions only.
+Stack labels and stored command text cannot enable execution. Snapshot the selected
+settings with each attempt, omit environment values/secrets, and show commands as
+not run. Actual process execution requires a separately approved confinement design.
 
 - Treat PR metadata, source, filenames, and repository instructions as untrusted
   data. Use user-approved policy or a trusted pinned baseline; changes in the PR
@@ -376,11 +400,33 @@ Apache-2.0 is proposed to align with Skein and its explicit patent grant. Licens
 adoption, contribution guidance, and distribution notices are release gates;
 reviewer terms remain separate. See the [Apache license](https://www.apache.org/licenses/LICENSE-2.0).
 
-## Foundation implementation
+## Current implementation
 
-The foundation uses published embedded APIs, one SQLite runtime file, and a
-credential-free diagnostic graph built by Skein’s native artifact builder.
-The application-domain database is deferred until domain data exists. The
+The desktop uses published embedded APIs and two native graph artifacts: the
+credential-free diagnostic and a deterministic manual local-review graph. Both
+are embedded in the same utility process with cron disabled and concurrency one.
+Diagnostics are blocked during an active review to avoid starving short requests.
+
+Application schema version 2 retains repositories, review records, and imported
+skills in `application.sqlite`; `runtime.sqlite` remains Skein-owned. The utility stores
+input before native admission, recovers receipt identity, validates terminal
+findings, and retains hash-bound result artifacts. A per-attempt start marker
+prevents replay from launching a second paid call. User cancellation and process
+loss do not automatically retry. This is attempt history, not cross-commit finding
+identity or the future polling/publication model.
+
+An ephemeral Node supervisor per active review owns the Codex child process tree.
+IPC disconnection stops it when the utility dies. Core receives fixed host paths
+and contains no Electron APIs. No standalone service or connector framework is
+added. The renderer can choose a repository through a native dialog, query reviews,
+submit a reference pair with an idempotency key, import a native-picked SKILL.md,
+select saved guidance, and cancel a specific review. Each attempt captures the
+skill's content and hash; reimporting does not rewrite history. The sidebar groups
+local repositories by GitHub origin owner or as a flat sortable list. This does
+not enable GitHub authentication or automatic discovery.
+It cannot supply filesystem paths, executables, graph IDs, or arbitrary channels.
+
+The
 [engineering guidance](engineering/README.md) records actual stack and boundaries.
 The [SQLite compatibility decision](decisions/0002-sqlite-native-compatibility.md)
 records the owner-approved narrow SQLite 13 override for Electron 45.

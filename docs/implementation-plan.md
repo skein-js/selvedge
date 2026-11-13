@@ -1,20 +1,106 @@
 # Phased implementation plan
 
-**Status:** Desktop/runtime foundation implemented; remaining phase-zero feasibility gates are pending.  
+**Status:** Foundation and manual Codex local-review preview implemented; cross-platform release gates remain explicit.
 **Design baseline:** 2026-11-13
 
 Electron is the accepted host. The [architecture](architecture.md) and
 [MVP scope](mvp-scope.md) define the intended behavior; this plan orders the work
 and defines evidence required to move forward. Phases are dependency gates, not
-calendar estimates. The current milestone implements the desktop/runtime foundation. Live reviewer
-authentication and the remaining MVP phases are still future work.
+calendar estimates. The current milestone implements the manual local-review
+slice described below. The wider GitHub MVP remains future work.
 
 The foundation provides the packaged host, tray/window lifecycle, validated IPC,
 one embedded Skein/SQLite runtime, and a retained deterministic check. Its local
 gate covers IPC boundaries, real native persistence, and packaged restart/failure
 recovery. macOS ARM64 is locally verified. The [foundation CI gate](https://github.com/skein-js/selvedge/actions/runs/43421481827)
-also passed on macOS ARM64, Windows x64, and Linux x64. Application migrations, reviewer
-authentication/safety, and product resource budgets remain phase-zero work.
+also passed on macOS ARM64, Windows x64, and Linux x64. That run predates the
+reviewer implementation and does not establish its cross-platform support.
+
+## Current increment: Manual local review, Codex first
+
+This deliberately combines the smallest useful part of phases 0, 1, and 4. Keep
+four existing Nx projects, the current desktop, the native Skein artifact builder,
+and a plain adapter. No connector framework, SDK, daemon, or extra model is needed.
+The [manual-review contract](manual-local-review.md) owns actual bounds and controls.
+
+| Step                       | Deliverable                                                                                   | Acceptance                                                                                                                    |
+| -------------------------- | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| 1. Freeze source           | Native repository picker, opaque IDs, base/head refs, trusted Git object extraction           | Exact base/head/merge-base SHAs; bounded before/after text; exclusions visible; no working-tree edits or scripts              |
+| 2. Invoke Codex            | Version/feature detection, restricted native CLI profile, supervised JSONL execution          | Supported CLI only; existing login; bounded input/output/time; no extra tools or provider fallback                            |
+| 3. Retain outcomes         | First application SQLite migration, deterministic native graph, receipt and result projection | Same request returns original attempt; invalid locations fail; validated output survives reopening; no automatic paid retries |
+| 4. Expose private workflow | One form, status/cancel, findings, saved history                                              | Cost/data destination visible before Run; preparing/running/cancelling/partial/error states; close/reopen preserves work      |
+| 5. Prove boundaries        | Extend existing native integration and packaged journey                                       | Cancellation, backend death, and Quit stop owned trees; fixture output is private; no test/fixture in production              |
+
+The accepted desktop refinement replaces the initial web-style hero/cards with
+a compact toolbar, repository sidebar, and review pane. Organization/owner groups
+come from local GitHub origin metadata; name/recent-review sorting and per-repo
+history require no GitHub API. Repositories contain review attempts in the sidebar,
+with a distinct New review action, repository search, native group/sort menu, and
+retained selection/disclosure state. Navigation follows the established
+[desktop interaction contract](manual-local-review.md#desktop-navigation).
+A native picker imports bounded local SKILL.md
+documents. Users customize them externally and explicitly reimport updates.
+Each attempt snapshots its chosen skill and hash; no scripts or adjacent resources
+are imported and no tool permissions change. Application schema version 2 retains
+repositories, attempts, and imported skills. These behaviors extend the existing
+integration and packaged journeys instead of adding parallel test suites.
+
+The new-review form now uses base/review branch selectors with read-only local Git
+discovery and sensible defaults, while retaining SHA-pinned results. Local and
+already-fetched remote branches can be refreshed without checkout or fetch. The
+desktop, Aura controls, and native UI follow the system's light/dark appearance.
+
+These steps are implemented in this working milestone. Automated acceptance is
+credential-free; account authentication and output quality require a separate
+explicitly authorized synthetic review. Keep that evidence separate from fixture
+tests. Local packaged validation is macOS ARM64; new Windows/Linux adapter checks
+must pass before claiming support there.
+One opt-in synthetic review using the actual installed Codex 0.167.0 and existing
+login passed on macOS ARM64, including validated findings and retained results
+after relaunch. This is account-specific evidence, not universal provider support.
+
+The preview deliberately supports only Codex CLI 0.167.0 with standard OpenAI
+routing, one review at a time, and 50 retained attempts. It does not track finding
+identity across attempts. Application history is durable; provider invocations
+are not automatically replayed after process loss.
+
+## Next increment: Review threads, repository settings, and approved posting
+
+The [thread and publication design](review-threads.md) records the next product
+direction. Its implementation is pending. Repository setup remains instructions
+and configuration only, as explicitly confirmed; framework labels never enable
+command execution.
+
+Deliver this manual journey before automatic monitoring:
+
+| Order | Deliverable                                                                                                  | Acceptance gate                                                                                                                                                    |
+| ----- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1     | Stable review threads with immutable attempts; branch selection; repository review/setup settings            | Existing results survive migration; reruns append to a thread; later config/skill edits cannot rewrite prior input; setup/run/test instructions are never executed |
+| 2     | GitHub read access and explicit PR selection, including fork/base/head identity                              | Branch reviews still work without GitHub; PR runs retain exact SHAs; account/permission failures are actionable; no automatic backlog spend                        |
+| 3     | Finding selection, editable publication preview, posting-permission check, and human-approved COMMENT review | Account access alone cannot post; content/account/target changes invalidate approval; uncertain delivery reconciles before any resend                              |
+
+Each PR gets a persistent product thread, with new attempts for new commits or an
+explicit rerun. A thread is a local history container; it does not keep a CLI or
+Skein invocation alive while awaiting a person. Posting uses a separate durable
+publication intent and exact approval. A local branch stays private unless the
+user explicitly links a matching existing PR.
+
+Keep repository options small: default skill/base branch, review guidance, stack,
+project subdirectory, tool/runtime versions, and textual setup/run/test instructions.
+Angular, Next.js, and Django are descriptive choices rather than framework-specific
+execution engines. Store environment names/setup notes without secret values.
+
+Extend existing native/packaged journeys for thread history, config snapshots,
+and the approval UI. Add focused GitHub boundary coverage only for new permission,
+freshness, and uncertain-delivery risks. Routine tests remain credential-free.
+
+This increment brings the initial controlled-publication slice forward from
+phase 5. The broader phases below remain release gates; their numbering is not a
+requirement to build polling before the manual thread-to-approved-post journey.
+The actual provider/platform safety matrix, cleanup/export, and resource budgets
+remain release work. Claude follows after independently verifying its safety and
+authentication; connectors, Antigravity, and direct APIs remain optional future
+work. No actual repository command execution is included.
 
 ## Phase 0: Prove packaging, authentication, and safety
 

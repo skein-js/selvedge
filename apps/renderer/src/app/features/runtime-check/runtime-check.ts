@@ -1,12 +1,12 @@
+import { DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  DestroyRef,
   computed,
+  DestroyRef,
   inject,
   signal,
 } from '@angular/core';
-import { DatePipe } from '@angular/common';
 import { ButtonModule } from '@openng/optimus-ui/button';
 import type { RuntimeStatus } from '@selvedge/contracts';
 
@@ -21,14 +21,13 @@ import type { RuntimeStatus } from '@selvedge/contracts';
   >
     <div class="card-heading">
       <div>
-        <p class="small-label">YOUR WORKSPACE</p>
         <h2 id="runtime-heading">Local runtime</h2>
       </div>
       <span class="status" [class.error]="status().status === 'error'" role="status">
         <span class="status-dot"></span>{{ checking() ? 'Checking' : statusLabel() }}
       </span>
     </div>
-    <p class="card-description">A small check. A durable result. No account required.</p>
+    <p class="card-description">Verify local persistence without credentials.</p>
     <div class="checkpoint">
       <span class="checkpoint-icon" aria-hidden="true">↳</span>
       <div>
@@ -54,6 +53,7 @@ import type { RuntimeStatus } from '@selvedge/contracts';
     }
     <div class="card-actions">
       <p-button
+        size="small"
         label="Run local check"
         [loading]="checking()"
         [disabled]="status().status !== 'ready' || checking()"
@@ -72,18 +72,18 @@ import type { RuntimeStatus } from '@selvedge/contracts';
     .runtime-card {
       background: var(--selvedge-panel);
       border: 1px solid var(--selvedge-border);
-      border-radius: 14px;
-      padding: 26px 28px;
-      box-shadow: 0 8px 30px var(--selvedge-shadow);
+      border-radius: 3px;
+      padding: 14px;
     }
     .small-label {
       color: var(--selvedge-muted);
       font-size: 9px;
       margin: 0 0 7px;
       letter-spacing: 1.3px;
+      font-weight: 600;
     }
     h2 {
-      font-size: 20px;
+      font-size: 14px;
       font-weight: 550;
       margin: 0;
       letter-spacing: -0.5px;
@@ -144,12 +144,9 @@ import type { RuntimeStatus } from '@selvedge/contracts';
       font-size: 12px;
       line-height: 1.6;
     }
-    .small-label {
-      font-weight: 600;
-    }
     @media (max-width: 700px) {
       .runtime-card {
-        padding: 22px;
+        padding: 12px;
       }
       .card-actions {
         flex-wrap: wrap;

@@ -1,4 +1,8 @@
+import js from '@eslint/js';
 import nx from '@nx/eslint-plugin';
+import prettier from 'eslint-config-prettier/flat';
+import simpleImportSort from 'eslint-plugin-simple-import-sort';
+import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default [
@@ -14,6 +18,20 @@ export default [
     ],
   },
   ...nx.configs['flat/base'],
+  {
+    ...js.configs.recommended,
+    files: ['**/*.{js,mjs,cjs}'],
+    languageOptions: { globals: globals.node },
+  },
+  {
+    files: ['**/*.{ts,js,mjs,cjs}'],
+    plugins: { 'simple-import-sort': simpleImportSort },
+    rules: {
+      'no-duplicate-imports': 'error',
+      'simple-import-sort/imports': 'error',
+      'simple-import-sort/exports': 'error',
+    },
+  },
   ...tseslint.configs.recommendedTypeChecked.map((config) => ({ ...config, files: ['**/*.ts'] })),
   {
     files: ['**/*.ts'],
@@ -75,4 +93,5 @@ export default [
       ],
     },
   },
+  prettier,
 ];

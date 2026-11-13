@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import { backendRequestSchema } from '../runtime-contracts';
 
 describe('runtime admission boundary', () => {
@@ -16,5 +17,21 @@ describe('runtime admission boundary', () => {
       { ...request, command: 'sh repository-script', sqlitePath: '/private/data.sqlite' },
     ])
       expect(backendRequestSchema.safeParse(input).success).toBe(false);
+    const review = {
+      operation: 'review',
+      id: request.id,
+      command: {
+        requestId: request.requestId,
+        repositoryId: request.id,
+        baseRef: 'HEAD~1',
+        headRef: 'HEAD',
+      },
+    };
+    expect(backendRequestSchema.safeParse(review).success).toBe(true);
+    for (const command of [
+      { ...review.command, baseRef: '--upload-pack=sh' },
+      { ...review.command, path: '/unapproved/repository', graph: 'arbitrary-graph' },
+    ])
+      expect(backendRequestSchema.safeParse({ ...review, command }).success).toBe(false);
   });
 });

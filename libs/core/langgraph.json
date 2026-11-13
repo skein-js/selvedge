@@ -1,5 +1,8 @@
 {
   "node_version": "24",
   "dependencies": ["."],
-  "graphs": { "runtime-check": "./src/graphs/runtime-check/graph.ts:graph" }
+  "graphs": {
+    "runtime-check": "./src/graphs/runtime-check/graph.ts:graph",
+    "local-review": "./src/graphs/local-review/graph.ts:graph"
+  }
 }

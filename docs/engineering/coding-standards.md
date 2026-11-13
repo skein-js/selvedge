@@ -17,14 +17,18 @@ Keep feature code with its owner. Create no generic service/repository framework
 global utilities dumping ground, unused feature folders, or shared UI wrappers.
 Extract shared behavior only for an actual reuse or platform boundary.
 
+Use the shared ESLint/Prettier configuration for imports and formatting. Keep
+cleanup focused on removing actual duplication or complexity; preserve validation
+at independent trust boundaries and avoid speculative abstractions.
+
 ## Project ownership
 
-| Project   | Ownership                                                                  | Allowed library platforms |
-| --------- | -------------------------------------------------------------------------- | ------------------------- |
-| desktop   | Electron main, preload, utility entry, lifecycle, and packaging            | node, shared              |
-| renderer  | Angular presentation and browser-safe IPC consumption                      | web, shared               |
-| core      | Embedded Skein runtime and future review-domain logic; no Electron imports | node, shared              |
-| contracts | Zod wire schemas and inferred types; no Node or framework dependencies     | shared                    |
+| Project   | Ownership                                                              | Allowed library platforms |
+| --------- | ---------------------------------------------------------------------- | ------------------------- |
+| desktop   | Electron main, preload, utility entry, lifecycle, and packaging        | node, shared              |
+| renderer  | Angular presentation and browser-safe IPC consumption                  | web, shared               |
+| core      | Embedded Skein runtime and review-domain logic; no Electron imports    | node, shared              |
+| contracts | Zod wire schemas and inferred types; no Node or framework dependencies | shared                    |
 
 Applications never import other applications. Libraries never import application
 source. Use the generated library entry points. Nx platform tags and ESLint
@@ -42,6 +46,15 @@ Use Optimus primitives, Aura semantic tokens, Tailwind, and native semantics.
 Keep keyboard access, focus visibility, labels, disabled/loading/error states,
 and small-window behavior usable. Inspect the rendered product for UI changes;
 compilation does not establish usability. Avoid fake data and inactive controls.
+Prefer a classic desktop workspace: compact toolbars, a sortable repository
+sidebar, and a focused review pane. Avoid marketing heroes and oversized web-page
+cards in the application. Reuse the global native control styles and Optimus buttons.
+Follow the [desktop navigation contract](../manual-local-review.md#desktop-navigation):
+repositories contain review attempts, view controls use the native menu, and
+navigation never starts a review. Preserve view state when recreating the window.
+Support system light/dark appearance through shared semantic colors and Aura's
+system theme. Keep native window backgrounds and controls aligned; avoid per-component
+hardcoded palettes or a second theme state store.
 
 ## Runtime and security
 
@@ -58,4 +71,6 @@ One process owns the runtime database. Keep state outside build output, dispose
 workers before storage, and preserve idempotency keys across delivery retries.
 Use Skein's native graph artifact build; do not substitute the renderer bundler.
 Do not install a provider, broker, database abstraction, or remote service without
-a concrete product requirement. No credential or live model call is needed here.
+a concrete product requirement. Ordinary verification needs no credentials or
+live model calls. Manual reviews use the installed CLI's authentication; live
+acceptance checks require explicit account-quota approval.

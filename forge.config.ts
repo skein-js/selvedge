@@ -1,5 +1,5 @@
-import type { ForgeConfig } from '@electron-forge/shared-types';
 import { AutoUnpackNativesPlugin } from '@electron-forge/plugin-auto-unpack-natives';
+import type { ForgeConfig } from '@electron-forge/shared-types';
 
 const config: ForgeConfig = {
   packagerConfig: {

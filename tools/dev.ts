@@ -2,6 +2,7 @@ import { spawn } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { setTimeout } from 'node:timers/promises';
+
 import { runNx } from './process.ts';
 
 await runNx(['run', 'desktop:build']);

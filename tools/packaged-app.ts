@@ -1,4 +1,4 @@
-import { readdir, lstat } from 'node:fs/promises';
+import { lstat, readdir } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
 export async function packagedApp() {

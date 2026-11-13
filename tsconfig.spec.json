@@ -1,5 +1,5 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": { "types": ["node", "vitest/globals"], "noEmit": true },
-  "include": ["apps/**/tests/**/*.ts", "libs/**/tests/**/*.ts"]
+  "include": ["apps/**/tests/**/*.ts", "libs/**/tests/**/*.ts", "apps/renderer/src/desktop.d.ts"]
 }

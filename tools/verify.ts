@@ -1,5 +1,6 @@
-import { runNx } from './process.ts';
 import './check-doc-links.ts';
+
+import { runNx } from './process.ts';
 
 for (const args of [
   ['run', 'desktop:format-check'],

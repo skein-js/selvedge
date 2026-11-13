@@ -18,3 +18,5 @@ selected experimental build integration; do not silently replace it.
 The setup skill's web-service defaults are deliberately adapted: SQLite replaces
 PostgreSQL, local IPC replaces HTTP, and the embedded runtime requires no model.
 NestJS, Better Auth, TanStack Query, and Vertex AI are not part of this milestone.
+The [manual local-review contract](../manual-local-review.md) documents the first
+Codex integration. Only the selected coding agent performs model inference.

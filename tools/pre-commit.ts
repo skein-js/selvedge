@@ -1,5 +1,7 @@
 import { execFileSync } from 'node:child_process';
+
 import prettier from 'prettier';
+
 import { runNx } from './process.ts';
 
 const paths = execFileSync('git', ['diff', '--cached', '--name-only', '--diff-filter=ACMR', '-z'], {

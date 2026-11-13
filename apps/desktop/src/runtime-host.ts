@@ -1,12 +1,19 @@
 import { randomUUID } from 'node:crypto';
-import { utilityProcess, type UtilityProcess } from 'electron';
+
 import {
+  type BackendRequest,
   backendResponseSchema,
   checkResultSchema,
-  runtimeStatusSchema,
-  type BackendRequest,
+  repositoryBranchesSchema,
+  repositorySchema,
+  type ReviewCommand,
+  reviewDashboardSchema,
+  reviewSchema,
   type RuntimeStatus,
+  runtimeStatusSchema,
+  skillSummarySchema,
 } from '@selvedge/contracts';
+import { type UtilityProcess, utilityProcess } from 'electron';
 
 interface Pending {
   resolve(value: unknown): void;
@@ -37,6 +44,7 @@ export class RuntimeHost {
       env: {
         ...process.env,
         SELVEDGE_DATA_DIRECTORY: this.dataDirectory,
+        SELVEDGE_NODE_EXECUTABLE: process.execPath,
         LANGSMITH_TRACING: 'false',
         LANGCHAIN_TRACING_V2: 'false',
       },
@@ -98,6 +106,40 @@ export class RuntimeHost {
     return checkResultSchema.parse(
       await this.request({ operation: 'check', id: randomUUID(), requestId }),
     );
+  }
+
+  async addRepository(path: string) {
+    return repositorySchema.parse(
+      await this.request({ operation: 'repository', id: randomUUID(), path }),
+    );
+  }
+
+  async getReviews() {
+    return reviewDashboardSchema.parse(
+      await this.request({ operation: 'reviews', id: randomUUID() }),
+    );
+  }
+
+  async getRepositoryBranches(repositoryId: string) {
+    return repositoryBranchesSchema.parse(
+      await this.request({ operation: 'branches', id: randomUUID(), repositoryId }),
+    );
+  }
+
+  async importReviewSkill(path: string) {
+    return skillSummarySchema.parse(
+      await this.request({ operation: 'import-skill', id: randomUUID(), path }),
+    );
+  }
+
+  async startReview(command: ReviewCommand) {
+    return reviewSchema.parse(
+      await this.request({ operation: 'review', id: randomUUID(), command }),
+    );
+  }
+
+  async cancelReview(reviewId: string) {
+    await this.request({ operation: 'cancel-review', id: randomUUID(), reviewId });
   }
 
   private request(request: BackendRequest): Promise<unknown> {

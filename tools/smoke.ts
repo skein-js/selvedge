@@ -1,14 +1,26 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
+
 import type { RuntimeStatus } from '@selvedge/contracts';
 import { _electron as electron, type ElectronApplication, type Page } from 'playwright';
-import { packagedApp, directoryBytes } from './packaged-app.ts';
+
+import {
+  confirmStopped,
+  createReviewFixture,
+} from '../apps/desktop/src/tests/fixtures/review-fixture.ts';
+import { directoryBytes, packagedApp } from './packaged-app.ts';
+import {
+  openDiagnostics,
+  reviewFromDashboard,
+  startHangingReview,
+} from './tests/manual-review-journey.ts';
 
 const { directory, executable } = await packagedApp();
 const data = await mkdtemp(join(tmpdir(), 'selvedge-smoke-'));
+const reviewFixture = await createReviewFixture();
 await mkdir('.artifacts', { recursive: true });
 let application: ElectronApplication | undefined;
 
@@ -17,6 +29,7 @@ async function launch() {
   for (const [key, value] of Object.entries(process.env)) if (value !== undefined) env[key] = value;
   delete env['ELECTRON_RUN_AS_NODE'];
   env['SELVEDGE_USER_DATA'] = data;
+  env['SELVEDGE_CODEX_PATH'] = reviewFixture.codexPath;
   const startedAt = performance.now();
   const app = await electron.launch({ executablePath: executable, env, timeout: 15_000 });
   application = app;
@@ -69,6 +82,8 @@ async function killBackend(app: ElectronApplication) {
 try {
   const first = await launch();
   assert.equal(first.runtime.lastCheckAt, null);
+  await reviewFromDashboard(first.app, first.page, reviewFixture);
+  await openDiagnostics(first.page);
   await first.page.getByRole('button', { name: 'Run local check' }).click();
   const { lastCheckAt: retained } = await waitForRuntime(
     first.page,
@@ -120,11 +135,25 @@ try {
   const tray = await memory(first.app);
   await first.app.evaluate(({ app }) => app.emit('activate'));
   const reopened = await first.app.firstWindow();
+  await reopened.getByTestId('review-summary').waitFor();
+  assert.equal(
+    await reopened.getByTestId('repository-item').first().getAttribute('aria-label'),
+    'another-org/alpha',
+  );
+  assert.equal(
+    await reopened
+      .getByRole('button', { name: 'Toggle reviews in another-org/alpha', exact: true })
+      .getAttribute('aria-expanded'),
+    'false',
+  );
+  await openDiagnostics(reopened);
   await reopened.waitForFunction(
     (expected) => document.querySelector('[data-testid="last-check"]')?.textContent === expected,
     displayedCheck,
   );
+  const interrupted = await startHangingReview(reopened, reviewFixture);
   const firstPid = await killBackend(first.app);
+  await confirmStopped(interrupted.pids);
   await first.app.evaluate(async ({ app }, previousPid) => {
     for (let attempt = 0; attempt < 100; attempt++) {
       if (
@@ -141,16 +170,27 @@ try {
     reopened,
     (state) => state.status === 'ready' && state.lastCheckAt === retained,
   );
+  const recovered = await reopened.evaluate(() => window.selvedge.getReviews());
+  assert.equal(
+    recovered.reviews.find((review) => review.id === interrupted.id)?.status,
+    'interrupted',
+  );
   await killBackend(first.app);
   await waitForRuntime(reopened, (state) => state.status === 'error');
-  await reopened.getByRole('alert').waitFor();
+  await openDiagnostics(reopened);
+  await reopened
+    .getByRole('region', { name: 'Local runtime', exact: true })
+    .getByRole('alert')
+    .waitFor();
   assert.equal(await reopened.getByTestId('last-check').textContent(), displayedCheck);
   await first.app.close();
   application = undefined;
   const second = await launch();
   assert.equal(second.runtime.lastCheckAt, retained);
+  const quitting = await startHangingReview(second.page, reviewFixture);
   const liveShutdownStarted = performance.now();
   await second.app.close();
+  await confirmStopped(quitting.pids);
   assert.ok(
     performance.now() - liveShutdownStarted < 5000,
     'Live runtime shutdown exceeded five seconds',
@@ -171,4 +211,5 @@ try {
 } finally {
   await application?.close();
   await rm(data, { recursive: true, force: true });
+  await rm(reviewFixture.directory, { recursive: true, force: true });
 }

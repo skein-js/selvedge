@@ -1,17 +1,22 @@
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+
+import { requestIdSchema } from '@selvedge/contracts';
 import {
   app,
   BrowserWindow,
   ipcMain,
+  type IpcMainInvokeEvent,
   Menu,
   nativeImage,
+  nativeTheme,
   Tray,
-  type IpcMainInvokeEvent,
 } from 'electron';
-import { requestIdSchema } from '@selvedge/contracts';
+
 import { isTrustedSender } from './ipc-security';
+import { registerReviewIpc } from './review-ipc';
 import { RuntimeHost } from './runtime-host';
+import { registerSidebarMenu } from './sidebar-menu';
 
 app.setName('Selvedge');
 if (process.env['SELVEDGE_USER_DATA']) app.setPath('userData', process.env['SELVEDGE_USER_DATA']);
@@ -28,6 +33,10 @@ async function startDesktop() {
   host.start();
   let window: BrowserWindow | null = null;
   let quitting = false;
+  const backgroundColor = () => (nativeTheme.shouldUseDarkColors ? '#151b18' : '#f7f8f5');
+  nativeTheme.on('updated', () => {
+    if (window && !window.isDestroyed()) window.setBackgroundColor(backgroundColor());
+  });
   const developmentUrl = !app.isPackaged ? process.env['SELVEDGE_RENDERER_URL'] : undefined;
   if (developmentUrl && developmentUrl !== 'http://127.0.0.1:4200') {
     throw new Error('The renderer development origin is not allowed.');
@@ -47,7 +56,7 @@ async function startDesktop() {
       height: 760,
       minWidth: 640,
       minHeight: 540,
-      backgroundColor: '#f7f8f7',
+      backgroundColor: backgroundColor(),
       show: false,
       webPreferences: {
         preload: join(import.meta.dirname, 'preload.cjs'),
@@ -111,6 +120,8 @@ async function startDesktop() {
     assertSender(event);
     return host.runLocalCheck(requestIdSchema.parse(input));
   });
+  registerReviewIpc(host, assertSender, () => window);
+  registerSidebarMenu(assertSender, () => window);
   const icon = nativeImage.createFromPath(join(import.meta.dirname, 'tray.png'));
   if (process.platform === 'darwin') icon.setTemplateImage(true);
   const tray = new Tray(icon);

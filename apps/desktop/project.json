@@ -105,6 +105,14 @@
         "command": "prettier --check ."
       }
     },
+    "format": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "commands": ["eslint . --fix --max-warnings=0", "prettier --write ."],
+        "parallel": false
+      }
+    },
     "lint": {
       "executor": "nx:run-commands",
       "cache": true,
@@ -114,10 +122,11 @@
         "{workspaceRoot}/tools/**/*",
         "{workspaceRoot}/forge.config.ts",
         "{workspaceRoot}/vitest*.ts",
+        "{workspaceRoot}/*.mjs",
         "{workspaceRoot}/tsconfig*.json"
       ],
       "options": {
-        "command": "eslint apps/desktop tools forge.config.ts vitest*.ts --max-warnings=0"
+        "command": "eslint apps/desktop tools forge.config.ts vitest*.ts *.mjs --max-warnings=0"
       }
     }
   }
