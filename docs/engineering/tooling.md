@@ -60,8 +60,9 @@ pages. Closing the dashboard removed its renderer. They establish a starting
 point for memory work, not a low-footprint claim or an agreed product budget.
 Fresh observations are emitted by every successful packaged smoke run.
 
-The [initial foundation CI run](https://github.com/skein-js/selvedge/actions/runs/43420148275)
+The [foundation CI gate](https://github.com/skein-js/selvedge/actions/runs/43421481827)
 passed the complete verification gate on macOS ARM64, Windows x64, and Linux x64.
+Each runner's screenshot and measurements are retained as run artifacts.
 This verifies unsigned foundation bundles on those runners; reviewer/provider,
 installer, signing, and release checks remain separate gates.
 
