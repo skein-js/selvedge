@@ -38,6 +38,8 @@ Documentation-only changes run formatting and local-link checks.
 
 Smoke checks use an isolated temporary data directory. Their screenshot and
 single-sample startup/memory/bundle measurements are written under `.artifacts/`.
+CI explicitly includes that hidden directory when uploading evidence and fails
+the upload if no files are present.
 Working-set totals can double-count shared pages; these are reproducible baseline
 observations, not physical-memory or performance guarantees. No reviewer process
 is present in this foundation.
@@ -57,6 +59,11 @@ These process-tree samples include Playwright's debugging connection and shared
 pages. Closing the dashboard removed its renderer. They establish a starting
 point for memory work, not a low-footprint claim or an agreed product budget.
 Fresh observations are emitted by every successful packaged smoke run.
+
+The [initial foundation CI run](https://github.com/skein-js/selvedge/actions/runs/43420148275)
+passed the complete verification gate on macOS ARM64, Windows x64, and Linux x64.
+This verifies unsigned foundation bundles on those runners; reviewer/provider,
+installer, signing, and release checks remain separate gates.
 
 ### Upstream peer warnings
 

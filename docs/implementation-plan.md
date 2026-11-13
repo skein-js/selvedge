@@ -12,8 +12,8 @@ authentication and the remaining MVP phases are still future work.
 The foundation provides the packaged host, tray/window lifecycle, validated IPC,
 one embedded Skein/SQLite runtime, and a retained deterministic check. Its local
 gate covers IPC boundaries, real native persistence, and packaged restart/failure
-recovery. macOS ARM64 is locally verified; the Windows/Linux CI matrix is
-configured but requires actual CI results. Application migrations, reviewer
+recovery. macOS ARM64 is locally verified. The [initial CI run](https://github.com/skein-js/selvedge/actions/runs/43420148275)
+also passed on macOS ARM64, Windows x64, and Linux x64. Application migrations, reviewer
 authentication/safety, and product resource budgets remain phase-zero work.
 
 ## Phase 0: Prove packaging, authentication, and safety
