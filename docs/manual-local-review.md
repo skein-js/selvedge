@@ -200,10 +200,13 @@ prove account authentication, model output quality, or provider policy complianc
 The final profile advertised only `request_user_input`, with no execution,
 filesystem, MCP, browser, or image tools.
 
-Local packaged evidence covers macOS ARM64. The foundation's earlier Windows/Linux
-CI pass is not evidence for this new adapter. Live account acceptance and each
-advertised platform's process cleanup remain separate release gates. Routine
-`pnpm verify` never requires provider credentials or consumes model quota.
+Local packaged evidence covers macOS ARM64. The credential-free
+[manual-review checks](https://github.com/skein-js/selvedge/actions/runs/43483405845)
+passed on macOS, Windows x64, and Linux x64, including native persistence,
+owned-process cancellation, backend-death recovery, and bounded Quit. These use a
+fixture CLI; actual Codex account/profile acceptance on Windows/Linux remains a
+separate release gate. Routine `pnpm verify` never requires provider credentials
+or consumes model quota.
 
 On 2026-11-13, one explicitly approved synthetic review also passed through the
 packaged desktop with the actual installed Codex CLI 0.167.0 and existing login.

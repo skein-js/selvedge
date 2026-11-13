@@ -53,8 +53,10 @@ desktop, Aura controls, and native UI follow the system's light/dark appearance.
 These steps are implemented in this working milestone. Automated acceptance is
 credential-free; account authentication and output quality require a separate
 explicitly authorized synthetic review. Keep that evidence separate from fixture
-tests. Local packaged validation is macOS ARM64; new Windows/Linux adapter checks
-must pass before claiming support there.
+tests. Local packaged validation covers macOS ARM64. The credential-free
+[manual-review CI checks](https://github.com/skein-js/selvedge/actions/runs/43483405845)
+passed on macOS, Windows x64, and Linux x64. Actual Codex account/profile acceptance
+on Windows/Linux remains a separate release gate.
 One opt-in synthetic review using the actual installed Codex 0.167.0 and existing
 login passed on macOS ARM64, including validated findings and retained results
 after relaunch. This is account-specific evidence, not universal provider support.

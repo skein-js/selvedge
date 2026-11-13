@@ -54,7 +54,9 @@ The [manual-review contract](docs/manual-local-review.md) explains the fixed saf
 profile and preview limits: 20 text files, 128 KiB total source, five-minute review
 deadline, and 50 retained attempts. Local packaged verification covers macOS
 ARM64, including one approved synthetic review with the actual CLI and existing
-login. This new adapter's Windows/Linux and broader account-policy gates are separate.
+login. [CI](https://github.com/skein-js/selvedge/actions/runs/43483405845) passed the
+credential-free packaged journey on macOS, Windows, and Linux. Actual Codex account
+acceptance on Windows/Linux and broader account-policy checks remain separate gates.
 
 ## Planned experience
 

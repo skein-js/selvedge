@@ -83,7 +83,11 @@ dashboard-open working-set sum, 439 MiB tray-only sum, and a 367 MiB uncompresse
 bundle on 2026-11-13. The fixture reviewer had finished at measurement time. These
 are individual observations under debugging, not comparable performance promises
 or accepted budgets. Fresh smoke output supersedes these values for a candidate.
-The new reviewer adapter still requires Windows/Linux packaged validation.
+The credential-free [manual-review CI checks](https://github.com/skein-js/selvedge/actions/runs/43483405845)
+passed on macOS, Windows x64, and Linux x64, including native integration and the
+packaged review/cancellation/recovery journey. Screenshots and measurements are
+retained as run artifacts. These fixture checks do not establish actual Codex
+account/profile compatibility on Windows/Linux; that remains a release gate.
 
 ### Upstream peer warnings
 
